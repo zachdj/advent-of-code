@@ -1,9 +1,10 @@
-from pathlib import Path
 from collections import deque
+from pathlib import Path
 from typing import Dict, List
 
 
 def find_size(directory: Dict):
+    """Recursively find the size of a "directory" """
     size = 0
     for key, val in directory.items():
         if isinstance(val, dict):
@@ -14,32 +15,37 @@ def find_size(directory: Dict):
     return size
 
 
-def find_maxsize_dirs(dirs: List, parent_dir: Dict, max_size=100000):
+def find_maxsize_dirs(parent_dir: Dict, max_size=100000):
+    """Recursively find the size of directories satisfying a max_size condition"""
+    dirs = []
     for key, val in parent_dir.items():
         if isinstance(val, dict):
             size = find_size(val)
             if size < max_size:
                 dirs.append(size)
 
-            find_maxsize_dirs(dirs, val, max_size)
+            dirs.extend(find_maxsize_dirs(val, max_size))
+
+    return dirs
 
 
-def find_minsize_dirs(dirs: List, parent_dir: Dict, min_size: float):
+def find_minsize_dirs(parent_dir: Dict, min_size: float):
+    """Recursively find the size of directories satisfying a min_size condition"""
+    dirs = []
     for key, val in parent_dir.items():
         if isinstance(val, dict):
             size = find_size(val)
             if size >= min_size:
                 dirs.append(size)
 
-            find_minsize_dirs(dirs, val, min_size)
+            dirs.extend(find_minsize_dirs(val, min_size))
+
+    return dirs
 
 
 def build_filesystem(puzzle: List[str]) -> Dict:
     # nested dicts are directories, keys are file sizes
-    filesystem = {
-        "/": {}
-    }
-
+    filesystem = {"/": {}}
     # construct the filesystem based on the series of commands
     cursor = 0
     working_dir = filesystem
@@ -68,7 +74,7 @@ def build_filesystem(puzzle: List[str]) -> Dict:
                     break
                 elif line.startswith("dir "):
                     _, dir_name = line.split()
-                    if not dir_name in working_dir:
+                    if dir_name not in working_dir:
                         working_dir[dir_name] = {}
                     cursor += 1
                 else:
@@ -85,8 +91,7 @@ def task1(input_filepath):
     fs = build_filesystem(puzzle)
 
     # now we have filesystem in memory.  Find all directories with size > 100000
-    qualifying_dirs = []
-    find_maxsize_dirs(qualifying_dirs, fs, max_size=100000)
+    qualifying_dirs = find_maxsize_dirs(fs, max_size=100000)
 
     print(f"Part 1 solution: {sum(qualifying_dirs)}")
     print("Mary Slimbus!")
@@ -102,8 +107,7 @@ def task2(input_filepath):
     unused_space = total_space - find_size(fs)
     min_size = free_space_needed - unused_space
 
-    qualifying_dirs = []
-    find_minsize_dirs(qualifying_dirs, fs, min_size=min_size)
+    qualifying_dirs = find_minsize_dirs(fs, min_size=min_size)
 
     print(f"Part 2 solution: {min(qualifying_dirs)}")
     print("Slappy New Yaer!")
