@@ -51,17 +51,12 @@ def task1(input_filepath):
 
 def task2(input_filepath):
     puzzle = [line for line in input_filepath.read_text().split("\n") if line]
-    divider_packets = {"[[2]]", "[[6]]"}
-    divider_indices = []
     packets = [eval(line) for line in puzzle]
-    packets.extend([eval(packet) for packet in divider_packets])
+    packets.extend([[[2]], [[6]]])
     sorted_packets = sorted(packets, key=cmp_to_key(compare))
-    for idx, packet in enumerate(sorted_packets):
-        if str(packet) in divider_packets:
-            divider_indices.append(idx + 1)
+    idx1, idx2 = sorted_packets.index([[2]]) + 1, sorted_packets.index([[6]]) + 1
 
-    solution = divider_indices[0] * divider_indices[1]
-    print(f"Part 2 solution: {solution}")
+    print(f"Part 2 solution: {idx1 * idx2}")
     print("Happy National Violin Day!")
 
 
